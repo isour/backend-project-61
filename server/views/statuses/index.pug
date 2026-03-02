@@ -13,14 +13,14 @@ block content
         tr
           th= t('views.statuses.id')
           th= t('views.statuses.name')
-          th= t('views.statuses.createdAt')
+          th= t('views.statuses.created_at')
           th= ' '
       tbody
         each status in statuses
           tr
             td= status.id
             td= status.name
-            td= formatDate(status.created_at)
+            td= formatDate(status.createdAt)
             td
               if currentUser
                 a.btn.btn-primary.btn-sm.me-2(href=`/statuses/${status.id}/edit`) Изменить
