@@ -1,0 +1,19 @@
+extends ../layouts/application.pug
+
+block header
+  = t('views.tasks.new.created_task')
+
+block content
+  .container
+    .row.justify-content-center
+      .col-md-6
+        .card.shadow-sm.bg-white.bg-opacity-85
+          .card-body.text-dark
+            +formFor()(action=route('tasks') method='post')
+              +inputPlain(task, 'name', errors)(type ="text", placeholder=t('views.tasks.name'))
+              +input(task, 'description', errors)(type = 'text')
+              +select(task, 'statusId', statuses, errors)
+              +select(task, 'executorId', users, errors)
+              +input(task, 'labels', errors)(type = 'text')
+              +submit(task)(value=t('views.tasks.new.submit'))
+              

@@ -24,6 +24,9 @@ html(lang="ru").h-100
               if isAuthenticated()
                 li.nav-item
                   a.nav-link.px-3(href=route('statuses'))= t('layouts.application.statuses')
+              if isAuthenticated()
+                li.nav-item
+                  a.nav-link.px-3(href=route('tasks'))= t('layouts.application.tasks')
             ul.navbar-nav.gap-2
               if isAuthenticated()
                 li.nav-item

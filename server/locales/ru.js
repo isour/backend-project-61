@@ -2,6 +2,10 @@
 
 export default {
   translation: {
+    description: 'Описание',
+    labels: 'Метки',
+    statusId: 'Статус',
+    executorId: 'Исполнитель',
     firstName: 'Имя',
     lastName: 'Фамилия',
     password: 'Пароль',
@@ -47,6 +51,12 @@ export default {
           error: 'Не удалось удалить статус',
         },
       },
+      tasks: {
+        create: {
+          success: 'Задача успешно создана',
+          error: 'Не удалось создать задачу',
+        },
+      },
     },
     layouts: {
       application: {
@@ -55,6 +65,7 @@ export default {
         signUp: 'Регистрация',
         signOut: 'Выход',
         statuses: 'Статусы',
+        tasks: 'Задачи',
       },
     },
     views: {
@@ -101,6 +112,25 @@ export default {
         header: 'Статусы',
         name: 'Наименование',
         created_at: 'Дата создания',
+      },
+      tasks: {
+        id: 'ID',
+        header: 'Задачи',
+        name: 'Наименование',
+        status: 'Статус',
+        author: 'Автор',
+        executor: 'Исполнитель',
+        created_at: 'Дата создания',
+        new: {
+          created_button: 'Создать задачу',
+          created_task: 'Создание задачи',
+          submit: 'Создать',
+          description: 'Описание',
+          status: 'Статус',
+          labels: 'Метки',
+          executor: 'Исполнитель',
+          noExecutor: '',
+        },
       },
     },
   },

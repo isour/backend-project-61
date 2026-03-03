@@ -3,8 +3,8 @@ const objectionUnique = require('objection-unique');
 const BaseModel = require('./BaseModel.cjs');
 
 const unique = objectionUnique({ fields: ['name'] });
-
-module.exports = class TaskStatus extends unique(BaseModel) {
+const Mixin = unique(BaseModel);
+module.exports = class TaskStatus extends Mixin {
   static get tableName() {
     return 'task_statuses';
   }

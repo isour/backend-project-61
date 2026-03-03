@@ -43,3 +43,21 @@ mixin inputPlain(entity, propertyName, errors = {})
     )&attributes(attributes)
     if !_.isEmpty(propertyErrors)
       .invalid-feedback= propertyErrors.map(({ message }) => message).join('. ')
+
+mixin select(entity, propertyName, options, errors = {})
+  - propertyErrors = _.get(errors, propertyName)
+  - classLine = 'form-control' + (_.isEmpty(propertyErrors) ? '' : ' is-invalid')
+  - inputId = getInputId(propertyName)
+  .mb-3
+    label(for=inputId)= t(propertyName)
+    select(id=inputId name=getInputName(propertyName) class=classLine)
+      each opt in options
+        - var selected = false
+        - var currentValue = _.get(entity, propertyName)
+        if opt.id === '' && (currentValue === null || currentValue === undefined)
+          - selected = true
+        else if currentValue == opt.id
+          - selected = true
+        option(value=opt.id selected=selected)= opt.name
+    if !_.isEmpty(propertyErrors)
+      .invalid-feedback= propertyErrors.map(({ message }) => message).join('. ')  

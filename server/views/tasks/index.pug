@@ -1,0 +1,32 @@
+extends ../layouts/application.pug
+
+block header
+  = t('views.tasks.header')
+
+block content
+  .mt-4
+    if currentUser
+      .mb-3.text-start
+        a.btn.btn-primary(href=route('newTask'))= t('views.tasks.new.created_button')
+    table.table.table-striped
+      thead
+        tr
+          th= t('views.tasks.id')
+          th= t('views.tasks.name')
+          th= t('views.tasks.status')
+          th= t('views.tasks.author')
+          th= t('views.tasks.executor')
+          th= t('views.tasks.created_at')
+      tbody
+        each task in tasks
+          tr
+            td= task.id
+            td= task.name
+            td= task.status ? task.status.name : ''
+            td= task.creator ? task.creator.firstName + ' ' + task.creator.lastName : ''
+            td= task.executor ? task.executor.firstName + ' ' + task.executor.lastName : ''
+            td= formatDate(task.createdAt)
+            td
+              if currentUser
+                a.btn.btn-primary.btn-sm.me-2(href=`/tasks/${task.id}/edit`) Изменить
+                +buttonTo(`/tasks/${task.id}`, 'delete')(class="btn btn-danger btn-sm" value="Удалить")

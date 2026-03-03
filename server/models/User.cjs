@@ -1,11 +1,10 @@
-// @ts-check
 const objectionUnique = require('objection-unique');
 const BaseModel = require('./BaseModel.cjs');
 const encrypt = require('../lib/secure.cjs');
 
 const unique = objectionUnique({ fields: ['email'] });
-
-module.exports = class User extends unique(BaseModel) {
+const Mixin = unique(BaseModel);
+module.exports = class User extends Mixin {
   static get tableName() {
     return 'users';
   }
