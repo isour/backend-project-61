@@ -49,5 +49,60 @@ export default (app) => {
           errors: err.data || {},
         });
       }
-    });
+    })
+    .get('/tasks/:id/edit', { name: 'editTask', preValidation: app.authenticate }, async (req, reply) => {
+      const { id } = req.params;
+      const task = await app.objection.models.task.query().findById(id);
+      if (!task) {
+        return reply.status(404).send('Task not found');
+      }
+      const statuses = await app.objection.models.taskStatus.query();
+      const users = await app.objection.models.user.query();
+      const usersWithName = users.map(user => ({
+        id: user.id,
+        name: `${user.firstName} ${user.lastName}`,
+      }));
+      const emptyOption = { id: '', name: i18next.t('views.tasks.new.noExecutor') };
+      const usersForSelect = [emptyOption, ...usersWithName];
+      return reply.render('tasks/edit', {
+        task,
+        statuses,
+        users: usersForSelect,
+        errors: {},
+      });
+    })
+    .patch('/tasks/:id', { name: 'updateTask', preValidation: app.authenticate }, async (req, reply) => {
+      const { id } = req.params;
+      const task = await app.objection.models.task.query().findById(id);
+      if (!task) {
+        return reply.status(404).send('Task not found');
+      }
+      const updateData = { ...req.body.data };
+      if (updateData.executorId === '') {
+        updateData.executorId = null;
+      }
+      try {
+        await task.$query().patch(updateData);
+        req.flash('info', i18next.t('flash.tasks.update.success'));
+        return reply.redirect(app.reverse('tasks'));
+      } catch (err) {
+        req.flash('error', i18next.t('flash.tasks.update.error'));
+        const statuses = await app.objection.models.taskStatus.query();
+        const users = await app.objection.models.user.query();
+        const usersWithName = users.map(user => ({
+          id: user.id,
+          name: `${user.firstName} ${user.lastName}`,
+        }));
+        const emptyOption = { id: '', name: i18next.t('views.tasks.new.noExecutor') };
+        const usersForSelect = [emptyOption, ...usersWithName];
+        const errors = err.data || {};
+        const taskWithId = { ...req.body.data, id };
+        return reply.render('tasks/edit', {
+          task: taskWithId,
+          statuses,
+          users: usersForSelect,
+          errors,
+        });
+      }
+    })
 };

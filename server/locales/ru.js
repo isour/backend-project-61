@@ -131,6 +131,10 @@ export default {
           executor: 'Исполнитель',
           noExecutor: '',
         },
+        edit: {
+          title: 'Изменение задачи',
+          submit: 'Изменить',
+        },
       },
     },
   },
