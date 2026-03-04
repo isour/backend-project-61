@@ -1,4 +1,3 @@
-
 import { load } from 'cheerio';
 import _ from 'lodash';
 import fastify from 'fastify';
@@ -203,12 +202,12 @@ describe('test users CRUD', () => {
       expect(deletedUser).toBeUndefined();
 
       const editPage = await app.inject({
-  method: 'GET',
-  url: `/users/${testUser.id}/edit`,
-  headers: { cookie: cookies },
-});
-expect(editPage.statusCode).toBe(302);
-expect(editPage.headers.location).toBe('/session/new');
+        method: 'GET',
+        url: `/users/${testUser.id}/edit`,
+        headers: { cookie: cookies },
+      });
+      expect(editPage.statusCode).toBe(302);
+      expect(editPage.headers.location).toBe('/session/new');
     });
 
     it('DELETE /users/:id forbids deleting other user', async () => {

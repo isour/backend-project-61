@@ -74,7 +74,7 @@ describe('test tasks CRUD', () => {
     name: `Task-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
     description: 'Test description',
     statusId: testStatusId,
-    executorId: user2Id, 
+    executorId: user2Id,
   });
 
   it('index', async () => {
@@ -131,7 +131,7 @@ describe('test tasks CRUD', () => {
       name: `Updated-${Date.now()}`,
       description: 'Updated description',
       statusId: testStatusId,
-      executorId: user1Id, 
+      executorId: user1Id,
     };
     const response = await app.inject({
       method: 'PATCH',

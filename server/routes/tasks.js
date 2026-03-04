@@ -3,23 +3,59 @@ import i18next from 'i18next';
 export default (app) => {
   app
     .get('/tasks', { name: 'tasks' }, async (req, reply) => {
-      const tasks = await app.objection.models.task.query().withGraphJoined('[status, creator, executor]');
-      return reply.render('tasks/index', { tasks, currentUser: req.user });
+      const {
+        statusId, executorId, labelId, createdByMe,
+      } = req.query;
+      let query = app.objection.models.task.query().withGraphJoined('[status, creator, executor, labels]');
+      if (statusId && statusId !== '') {
+        query = query.where('statusId', statusId);
+      }
+      if (executorId && executorId !== '') {
+        query = query.where('executorId', executorId);
+      }
+      if (labelId && labelId !== '') {
+        query = query.whereExists(
+          app.objection.models.task.relatedQuery('labels').where('labels.id', labelId),
+        );
+      }
+      if (createdByMe && req.user) {
+        query = query.where('creatorId', req.user.id);
+      }
+      const tasks = await query;
+      const statuses = await app.objection.models.taskStatus.query().orderBy('name');
+      const users = await app.objection.models.user.query().orderBy('firstName');
+      const labels = await app.objection.models.label.query().orderBy('name');
+      const filterValues = {
+        statusId: statusId || '',
+        executorId: executorId || '',
+        labelId: labelId || '',
+        createdByMe: createdByMe === 'on' || createdByMe === 'true',
+      };
+      return reply.render('tasks/index', {
+        tasks,
+        currentUser: req.user,
+        statuses,
+        users: users.map((u) => ({ ...u, name: `${u.firstName} ${u.lastName}` })),
+        labels,
+        ...filterValues,
+      });
     })
-    .get('/tasks/new', { name: 'newTask', preValidation: app.authenticate }, async (req,reply) => {
+    .get('/tasks/new', { name: 'newTask', preValidation: app.authenticate }, async (req, reply) => {
       const task = new app.objection.models.task();
       const statuses = await app.objection.models.taskStatus.query();
       const users = await app.objection.models.user.query();
-      const usersWithName = users.map(user => ({
+      const usersWithName = users.map((user) => ({
         id: user.id,
         name: `${user.firstName} ${user.lastName}`,
       }));
       const emptyOption = { id: '', name: i18next.t('views.tasks.new.noExecutor') };
       const usersForSelect = [emptyOption, ...usersWithName];
       const labels = await app.objection.models.label.query();
-      return reply.render('tasks/new', { task, statuses, users: usersForSelect, labels });
+      return reply.render('tasks/new', {
+        task, statuses, users: usersForSelect, labels,
+      });
     })
-    .post('/tasks', {preValidation: app.authenticate}, async(req,reply) => {
+    .post('/tasks', { preValidation: app.authenticate }, async (req, reply) => {
       const dataTask = req.body.data;
       if (dataTask.labels !== undefined && !Array.isArray(dataTask.labels)) {
         dataTask.labels = [dataTask.labels];
@@ -32,9 +68,9 @@ export default (app) => {
       task.$set(dataTask);
       try {
         await task.$query().insert();
-        const labelIds = (req.body.data.labels || []).map(id => Number(id));
+        const labelIds = (req.body.data.labels || []).map((id) => Number(id));
         if (labelIds.length) {
-          await Promise.all(labelIds.map(id => task.$relatedQuery('labels').relate(id)));
+          await Promise.all(labelIds.map((id) => task.$relatedQuery('labels').relate(id)));
         }
         req.flash('info', i18next.t('flash.tasks.create.success'));
         return reply.redirect(app.reverse('tasks'));
@@ -48,9 +84,9 @@ export default (app) => {
           dataTask.labels = [dataTask.labels];
         }
         if (dataTask.labels) {
-          dataTask.labels = dataTask.labels.map(id => Number(id));
-        };
-        const usersWithName = users.map(user => ({
+          dataTask.labels = dataTask.labels.map((id) => Number(id));
+        }
+        const usersWithName = users.map((user) => ({
           id: user.id,
           name: `${user.firstName} ${user.lastName}`,
         }));
@@ -83,14 +119,14 @@ export default (app) => {
       }
       const statuses = await app.objection.models.taskStatus.query();
       const users = await app.objection.models.user.query();
-      const usersWithName = users.map(user => ({
+      const usersWithName = users.map((user) => ({
         id: user.id,
         name: `${user.firstName} ${user.lastName}`,
       }));
       const emptyOption = { id: '', name: i18next.t('views.tasks.new.noExecutor') };
       const usersForSelect = [emptyOption, ...usersWithName];
-      const labels = await app.objection.models.label.query()
-      task.labels = (await task.$relatedQuery('labels')).map(label => label.id);
+      const labels = await app.objection.models.label.query();
+      task.labels = (await task.$relatedQuery('labels')).map((label) => label.id);
       return reply.render('tasks/edit', {
         task,
         statuses,
@@ -109,7 +145,7 @@ export default (app) => {
       if (updateData.labels !== undefined && !Array.isArray(updateData.labels)) {
         updateData.labels = [updateData.labels];
       }
-      const labelIds = (updateData.labels || []).map(id => Number(id))
+      const labelIds = (updateData.labels || []).map((labelId) => Number(labelId));
       delete updateData.labels;
       if (updateData.executorId === '') {
         updateData.executorId = null;
@@ -120,12 +156,12 @@ export default (app) => {
       if (updateData.executorId !== undefined && updateData.executorId !== '' && updateData.executorId !== null) {
         updateData.executorId = Number(updateData.executorId);
       }
-      const trx = await app.objection.models.task.startTransaction()
+      const trx = await app.objection.models.task.startTransaction();
       try {
         await task.$query(trx).patch(updateData);
         await task.$relatedQuery('labels', trx).unrelate();
         if (labelIds.length) {
-          await Promise.all(labelIds.map(id => task.$relatedQuery('labels', trx).relate(id)));
+          await Promise.all(labelIds.map((labelId) => task.$relatedQuery('labels', trx).relate(labelId)));
         }
         await trx.commit();
         req.flash('success', i18next.t('flash.tasks.update.success'));
@@ -137,7 +173,7 @@ export default (app) => {
         const labels = await app.objection.models.label.query();
         const statuses = await app.objection.models.taskStatus.query();
         const users = await app.objection.models.user.query();
-        const usersWithName = users.map(user => ({
+        const usersWithName = users.map((user) => ({
           id: user.id,
           name: `${user.firstName} ${user.lastName}`,
         }));
@@ -149,8 +185,8 @@ export default (app) => {
           taskWithId.labels = [taskWithId.labels];
         }
         if (taskWithId.labels) {
-          taskWithId.labels = taskWithId.labels.map(id => Number(id));
-        };
+          taskWithId.labels = taskWithId.labels.map((labelId) => Number(labelId));
+        }
         return reply.render('tasks/edit', {
           task: taskWithId,
           statuses,

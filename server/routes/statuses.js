@@ -3,16 +3,16 @@ import i18next from 'i18next';
 export default (app) => {
   app
     .get('/statuses', { name: 'statuses' }, async (req, reply) => {
-      const statuses = await app.objection.models.taskStatus.query(); 
+      const statuses = await app.objection.models.taskStatus.query();
       return reply.render('statuses/index', { statuses, currentUser: req.user });
     })
-    .get('/statuses/new', {name: 'newStatus', preValidation: app.authenticate}, async (req,reply) => {
-      const status = new app.objection.models.taskStatus()
-      return reply.render('statuses/new', {status})
+    .get('/statuses/new', { name: 'newStatus', preValidation: app.authenticate }, async (req, reply) => {
+      const status = new app.objection.models.taskStatus();
+      return reply.render('statuses/new', { status });
     })
-    .post('/statuses', {preValidation: app.authenticate}, async(req,reply) => {
-      const status = new app.objection.models.taskStatus()
-      status.$set(req.body.data)
+    .post('/statuses', { preValidation: app.authenticate }, async (req, reply) => {
+      const status = new app.objection.models.taskStatus();
+      status.$set(req.body.data);
       try {
         const validStatus = await app.objection.models.taskStatus.fromJson(req.body.data);
         await app.objection.models.taskStatus.query().insert(validStatus);
@@ -53,12 +53,12 @@ export default (app) => {
     .delete('/statuses/:id', { name: 'deleteStatus', preValidation: app.authenticate }, async (req, reply) => {
       const { id } = req.params;
       const status = await app.objection.models.taskStatus.query().findById(id);
-      const tasksWithStatus = await app.objection.models.task.query().where('statusId', id).resultSize()
+      const tasksWithStatus = await app.objection.models.task.query().where('statusId', id).resultSize();
       if (!status) {
         return reply.status(404).send('Status not found');
       }
       if (tasksWithStatus > 0) {
-        req.flash('error', i18next.t('flash.statuses.delete.taskError'))
+        req.flash('error', i18next.t('flash.statuses.delete.taskError'));
         return reply.redirect(app.reverse('statuses'));
       }
       try {

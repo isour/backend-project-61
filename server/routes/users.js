@@ -65,7 +65,7 @@ export default (app) => {
     .delete('/users/:id', { name: 'deleteUser', preValidation: app.authenticate }, async (req, reply) => {
       const { id } = req.params;
       const user = await app.objection.models.user.query().findById(id);
-      const usersTask = await app.objection.models.task.query().where('creatorId', id).orWhere('executorId', id).resultSize()
+      const usersTask = await app.objection.models.task.query().where('creatorId', id).orWhere('executorId', id).resultSize();
       if (!user) {
         return reply.status(404).send('User not found');
       }

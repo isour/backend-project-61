@@ -8,6 +8,38 @@ block content
     if currentUser
       .mb-3.text-start
         a.btn.btn-primary(href=route('newTask'))= t('views.tasks.new.created_button')
+
+    // Блок фильтрации в отдельной карточке
+    .card.shadow-sm.mb-5
+      .card-body
+        form(action=route('tasks') method='get')
+          .row.g-3
+            .col-md-3
+              label.form-label.fw-semibold(for='statusId')= t('views.tasks.status')
+              select.form-select(name='statusId' id='statusId')
+                option(value='') Любой
+                each status in statuses
+                  option(value=status.id selected=(statusId == status.id))= status.name
+            .col-md-3
+              label.form-label.fw-semibold(for='executorId')= t('views.tasks.executor')
+              select.form-select(name='executorId' id='executorId')
+                option(value='') Любой
+                each user in users
+                  option(value=user.id selected=(executorId == user.id))= user.name || (user.firstName + ' ' + user.lastName)
+            .col-md-3
+              label.form-label.fw-semibold(for='labelId')= t('views.tasks.label')
+              select.form-select(name='labelId' id='labelId')
+                option(value='') Любая
+                each label in labels
+                  option(value=label.id selected=(labelId == label.id))= label.name
+            .col-md-3.d-flex.align-items-end
+              .form-check.mb-2
+                input.form-check-input(type='checkbox' name='createdByMe' id='createdByMe' checked=createdByMe)
+                label.form-check-label.fw-semibold(for='createdByMe')= t('views.tasks.myTasks')
+            .col-12
+              button.btn.btn-primary(type='submit') Показать
+              a.btn.btn-outline-secondary.ms-2(href=route('tasks')) Сбросить
+
     table.table.table-striped
       thead
         tr
@@ -17,6 +49,7 @@ block content
           th= t('views.tasks.author')
           th= t('views.tasks.executor')
           th= t('views.tasks.created_at')
+          th
       tbody
         each task in tasks
           tr
@@ -28,5 +61,6 @@ block content
             td= formatDate(task.createdAt)
             td
               if currentUser
-                a.btn.btn-primary.btn-sm.me-2(href=`/tasks/${task.id}/edit`) Изменить
-                +buttonTo(`/tasks/${task.id}`, 'delete')(class="btn btn-danger btn-sm" value="Удалить")
+                .d-flex
+                  a.btn.btn-primary.btn-sm.me-2(href=`/tasks/${task.id}/edit`) Изменить
+                  +buttonTo(`/tasks/${task.id}`, 'delete')(class="btn btn-danger btn-sm" value="Удалить")

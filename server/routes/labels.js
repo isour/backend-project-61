@@ -6,7 +6,7 @@ export default (app) => {
       const labels = await app.objection.models.label.query();
       return reply.render('labels/index', { labels, currentUser: req.user });
     })
-    .get('/labels/new', { name: 'newLabel', preValidation: app.authenticate }, async (req,reply) => {
+    .get('/labels/new', { name: 'newLabel', preValidation: app.authenticate }, async (req, reply) => {
       const label = new app.objection.models.label();
       return reply.render('labels/new', { label });
     })
@@ -53,7 +53,7 @@ export default (app) => {
     .delete('/labels/:id', { name: 'deleteLabel', preValidation: app.authenticate }, async (req, reply) => {
       const { id } = req.params;
       const label = await app.objection.models.label.query().findById(id);
-      const labelsWithTasks = await label.$relatedQuery('tasks').resultSize()
+      const labelsWithTasks = await label.$relatedQuery('tasks').resultSize();
       if (!label) {
         return reply.status(404).send('Status not found');
       }

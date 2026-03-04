@@ -144,6 +144,8 @@ export default {
         header: 'Задачи',
         name: 'Наименование',
         status: 'Статус',
+        label: 'Метка',
+        myTasks: 'Мои задачи',
         author: 'Автор',
         executor: 'Исполнитель',
         description: 'Описание',
