@@ -6,9 +6,6 @@ export default (app) => {
       reply.render('welcome/index');
     })
     .get('/protected', { name: 'protected', preValidation: app.authenticate }, (req, reply) => {
-      reply.render('welcome/index')
-    })
-    .get('/test-rollbar', (req, reply) => {
-      throw new Error('Test error for Rollbar integration');
+      reply.render('welcome/index');
     });
 };
