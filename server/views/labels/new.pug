@@ -1,0 +1,15 @@
+extends ../layouts/application.pug
+
+block header
+  = t('views.labels.new.created_label')
+
+block content
+  .container
+    .row.justify-content-center
+      .col-md-6
+        .card.shadow-sm.bg-white.bg-opacity-85
+          .card-body.text-dark
+            +formFor()(action=route('labels') method='post')
+              +inputPlain(label, 'name', errors)(type ="text", placeholder=t('views.labels.new.name'))
+              +submit(label)(value=t('views.labels.new.submit'))
+              

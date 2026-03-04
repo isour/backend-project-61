@@ -4,7 +4,6 @@ export default (app) => {
   app
     .get('/tasks', { name: 'tasks' }, async (req, reply) => {
       const tasks = await app.objection.models.task.query().withGraphJoined('[status, creator, executor]');
-      console.log('First task (raw):', tasks[0]);
       return reply.render('tasks/index', { tasks, currentUser: req.user });
     })
     .get('/tasks/new', { name: 'newTask', preValidation: app.authenticate }, async (req,reply) => {
@@ -17,10 +16,14 @@ export default (app) => {
       }));
       const emptyOption = { id: '', name: i18next.t('views.tasks.new.noExecutor') };
       const usersForSelect = [emptyOption, ...usersWithName];
-      return reply.render('tasks/new', { task, statuses, users: usersForSelect });
+      const labels = await app.objection.models.label.query();
+      return reply.render('tasks/new', { task, statuses, users: usersForSelect, labels });
     })
     .post('/tasks', {preValidation: app.authenticate}, async(req,reply) => {
       const dataTask = req.body.data;
+      if (dataTask.labels !== undefined && !Array.isArray(dataTask.labels)) {
+        dataTask.labels = [dataTask.labels];
+      }
       dataTask.creatorId = req.user.id;
       if (dataTask.executorId === '') {
         dataTask.executorId = null;
@@ -29,13 +32,24 @@ export default (app) => {
       task.$set(dataTask);
       try {
         await task.$query().insert();
+        const labelIds = (req.body.data.labels || []).map(id => Number(id));
+        if (labelIds.length) {
+          await Promise.all(labelIds.map(id => task.$relatedQuery('labels').relate(id)));
+        }
         req.flash('info', i18next.t('flash.tasks.create.success'));
         return reply.redirect(app.reverse('tasks'));
       } catch (err) {
         console.error(err);
         req.flash('error', i18next.t('flash.tasks.create.error'));
         const statuses = await app.objection.models.taskStatus.query();
+        const labels = await app.objection.models.label.query();
         const users = await app.objection.models.user.query();
+        if (dataTask.labels !== undefined && !Array.isArray(dataTask.labels)) {
+          dataTask.labels = [dataTask.labels];
+        }
+        if (dataTask.labels) {
+          dataTask.labels = dataTask.labels.map(id => Number(id));
+        };
         const usersWithName = users.map(user => ({
           id: user.id,
           name: `${user.firstName} ${user.lastName}`,
@@ -45,6 +59,7 @@ export default (app) => {
         return reply.render('tasks/new', {
           task: dataTask,
           statuses,
+          labels,
           users: usersForSelect,
           errors: err.data || {},
         });
@@ -52,11 +67,12 @@ export default (app) => {
     })
     .get('/tasks/:id', { name: 'taskShow', preValidation: app.authenticate }, async (req, reply) => {
       const { id } = req.params;
-      const task = await app.objection.models.task.query().findById(id).withGraphJoined('[status, creator, executor]')
+      const task = await app.objection.models.task.query().findById(id).withGraphJoined('[status, creator, executor, labels]');
+      const labels = await app.objection.models.label.query();
       if (!task) {
         return reply.status(404).send('task not found');
       }
-      return reply.render('tasks/show', { task, currentUser: req.user });
+      return reply.render('tasks/show', { task, labels, currentUser: req.user });
     })
 
     .get('/tasks/:id/edit', { name: 'editTask', preValidation: app.authenticate }, async (req, reply) => {
@@ -73,9 +89,12 @@ export default (app) => {
       }));
       const emptyOption = { id: '', name: i18next.t('views.tasks.new.noExecutor') };
       const usersForSelect = [emptyOption, ...usersWithName];
+      const labels = await app.objection.models.label.query()
+      task.labels = (await task.$relatedQuery('labels')).map(label => label.id);
       return reply.render('tasks/edit', {
         task,
         statuses,
+        labels,
         users: usersForSelect,
         errors: {},
       });
@@ -87,6 +106,11 @@ export default (app) => {
         return reply.status(404).send('Task not found');
       }
       const updateData = { ...req.body.data };
+      if (updateData.labels !== undefined && !Array.isArray(updateData.labels)) {
+        updateData.labels = [updateData.labels];
+      }
+      const labelIds = (updateData.labels || []).map(id => Number(id))
+      delete updateData.labels;
       if (updateData.executorId === '') {
         updateData.executorId = null;
       }
@@ -96,12 +120,21 @@ export default (app) => {
       if (updateData.executorId !== undefined && updateData.executorId !== '' && updateData.executorId !== null) {
         updateData.executorId = Number(updateData.executorId);
       }
+      const trx = await app.objection.models.task.startTransaction()
       try {
-        await task.$query().patch(updateData);
-        req.flash('info', i18next.t('flash.tasks.update.success'));
+        await task.$query(trx).patch(updateData);
+        await task.$relatedQuery('labels', trx).unrelate();
+        if (labelIds.length) {
+          await Promise.all(labelIds.map(id => task.$relatedQuery('labels', trx).relate(id)));
+        }
+        await trx.commit();
+        req.flash('success', i18next.t('flash.tasks.update.success'));
         return reply.redirect(app.reverse('tasks'));
       } catch (err) {
+        await trx.rollback();
+        console.error(err);
         req.flash('error', i18next.t('flash.tasks.update.error'));
+        const labels = await app.objection.models.label.query();
         const statuses = await app.objection.models.taskStatus.query();
         const users = await app.objection.models.user.query();
         const usersWithName = users.map(user => ({
@@ -112,11 +145,18 @@ export default (app) => {
         const usersForSelect = [emptyOption, ...usersWithName];
         const errors = err.data || {};
         const taskWithId = { ...req.body.data, id };
+        if (taskWithId.labels !== undefined && !Array.isArray(taskWithId.labels)) {
+          taskWithId.labels = [taskWithId.labels];
+        }
+        if (taskWithId.labels) {
+          taskWithId.labels = taskWithId.labels.map(id => Number(id));
+        };
         return reply.render('tasks/edit', {
           task: taskWithId,
           statuses,
           users: usersForSelect,
           errors,
+          labels,
         });
       }
     })

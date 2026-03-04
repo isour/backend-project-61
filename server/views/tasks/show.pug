@@ -13,6 +13,10 @@ block content
         .mb-4
           p.lead.text-muted= task.description || t('views.tasks.noDescription')
         
+        if task.labels && task.labels.length
+          .mb-3
+            each label in task.labels
+              span.badge.bg-danger.me-1= label.name
         dl.row
           dt.col-sm-3= t('views.tasks.status')
           dd.col-sm-9

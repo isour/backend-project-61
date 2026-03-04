@@ -61,3 +61,24 @@ mixin select(entity, propertyName, options, errors = {})
         option(value=opt.id selected=selected)= opt.name
     if !_.isEmpty(propertyErrors)
       .invalid-feedback= propertyErrors.map(({ message }) => message).join('. ')  
+
+mixin selectMultiple(entity, propertyName, options, errors = {})
+  - propertyErrors = _.get(errors, propertyName)
+  - classLine = 'form-control' + (_.isEmpty(propertyErrors) ? '' : ' is-invalid')
+  - inputId = getInputId(propertyName)
+  .mb-3(class=(errors[propertyName] && 'has-danger'))
+    label(for=inputId)= t(propertyName)
+    select(
+      id=inputId
+      name=getInputName(propertyName)
+      class=classLine
+      multiple=true
+    )&attributes(attributes)
+      each opt in options
+        - var selected = false
+        - var currentValues = _.get(entity, propertyName, [])
+        if currentValues.includes(opt.id)
+          - selected = true
+        option(value=opt.id selected=selected)= opt.name
+    if !_.isEmpty(propertyErrors)
+      .invalid-feedback= propertyErrors.map(({ message }) => message).join('. ')

@@ -1,0 +1,16 @@
+extends ../layouts/application.pug
+
+block header
+  = t('views.labels.edit.title')
+
+block content
+  .container
+    .row.justify-content-center
+      .col-md-6
+        .card.shadow-sm.bg-white.bg-opacity-85
+          .card-body.text-dark
+            +formFor()(action=route('updateLabel', {id: label.id}) method='post')
+              input(name="_method" type="hidden" value="patch")
+              +inputPlain(label, 'name', errors)(type ="text", placeholder=t('views.labels.new.name'))
+              +submit(user)(value=t('views.labels.edit.submit'))
+              

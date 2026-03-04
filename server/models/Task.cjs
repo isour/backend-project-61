@@ -21,7 +21,6 @@ module.exports = class Task extends BaseModel {
   }
 
   static get relationMappings() {
-    
     return {
       status: {
         relation: BaseModel.BelongsToOneRelation,
@@ -45,6 +44,18 @@ module.exports = class Task extends BaseModel {
         join: {
           from: 'tasks.executor_id',
           to: 'users.id',
+        },
+      },
+      labels: {
+        relation: BaseModel.ManyToManyRelation,
+        modelClass: () => require('./Label.cjs'),
+        join: {
+          from: 'tasks.id',
+          through: {
+            from: 'task_labels.task_id',
+            to: 'task_labels.label_id',
+          },
+          to: 'labels.id',
         },
       },
     };

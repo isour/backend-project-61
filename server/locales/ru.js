@@ -62,6 +62,25 @@ export default {
           success: 'Задача успешно создана',
           error: 'Не удалось создать задачу',
         },
+        update: {
+          success: 'Задача успешно обновлена',
+          error: 'Не удалось обновить задачу',
+        },
+      },
+      labels: {
+        create: {
+          success: 'Метка успешно создана',
+          error: 'Не удалось создать метку',
+        },
+        update: {
+          success: 'Метка успешно обновлена',
+          error: 'Не удалось обновить метку',
+        },
+        delete: {
+          success: 'Метка успешно удалена',
+          error: 'Не удалось удалить метку',
+          taskError: 'Не удалось удалить метку, есть связанные задачи',
+        },
       },
     },
     layouts: {
@@ -72,6 +91,7 @@ export default {
         signOut: 'Выход',
         statuses: 'Статусы',
         tasks: 'Задачи',
+        labels: 'Метки',
       },
     },
     views: {
@@ -145,6 +165,22 @@ export default {
         },
         delete: {
           submit: 'Удалить',
+        },
+      },
+      labels: {
+        header: 'Метки',
+        id: 'ID',
+        name: 'Наименование',
+        created_at: 'Дата создания',
+        new: {
+          created_button: 'Создать метку',
+          created_label: 'Создание метки',
+          submit: 'Создать',
+          name: 'наименование',
+        },
+        edit: {
+          submit: 'Изменить',
+          title: 'Изменение статуса',
         },
       },
     },

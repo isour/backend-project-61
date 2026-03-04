@@ -1,0 +1,27 @@
+extends ../layouts/application.pug
+
+block header
+  = t('views.labels.header')
+
+block content
+  .mt-4
+    if currentUser
+      .mb-3.text-start
+        a.btn.btn-primary(href=route('newLabel'))= t('views.labels.new.created_button')
+    table.table.table-striped
+      thead
+        tr
+          th= t('views.labels.id')
+          th= t('views.labels.name')
+          th= t('views.labels.created_at')
+          th= ' '
+      tbody
+        each label in labels
+          tr
+            td= label.id
+            td= label.name
+            td= formatDate(label.createdAt)
+            td
+              if currentUser
+                a.btn.btn-primary.btn-sm.me-2(href=`/labels/${label.id}/edit`) Изменить
+                +buttonTo(`/labels/${label.id}`, 'delete')(class="btn btn-danger btn-sm" value="Удалить")
