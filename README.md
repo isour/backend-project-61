@@ -1,22 +1,27 @@
-# fastify-nodejs-application
+# Task-manager on fastify
 
 [![Node CI](https://github.com/hexlet-boilerplates/fastify-nodejs-application/workflows/Node%20CI/badge.svg)](https://github.com/hexlet-boilerplates/fastify-nodejs-application/actions)
 
-## Setup
-
-```bash
-make setup
-```
-
-## Run
-
-```bash
-$ make start
-# Open localhost:5000
-```
+---
+## Deploy on Render
+link: https://backend-project-6-wv42.onrender.com
 
 ---
-## Render link: https://backend-project-6-wv42.onrender.com
+
+## Quick start
+
+```git clone git@github.com:EgorDanilov95/backend-project-6.git```
+
+```npm install```
+
+```make build```
+
+```make start-backend```
+
+---
+
+
+
 
 
 [![Hexlet Ltd. logo](https://raw.githubusercontent.com/Hexlet/assets/master/images/hexlet_logo128.png)](https://hexlet.io?utm_source=github&utm_medium=link&utm_campaign=fastify-nodejs-application)
